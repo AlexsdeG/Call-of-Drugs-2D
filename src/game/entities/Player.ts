@@ -109,7 +109,13 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     scene.add.existing(this);
     scene.physics.add.existing(this);
 
+    // Explicitly disable drag/damping to ensure setVelocity works at full speed
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    body.setDrag(0, 0);
+    body.useDamping = false;
+
     this.setCircle(PLAYER.BASE_RADIUS, PLAYER.BASE_RADIUS, PLAYER.BASE_RADIUS);
+
     this.setCollideWorldBounds(true);
     this.setOrigin(0.5, 0.5);
     this.setImmovable(false);

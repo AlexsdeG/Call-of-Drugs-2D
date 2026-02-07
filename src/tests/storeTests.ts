@@ -75,13 +75,13 @@ export const storeTests: GameTest[] = [
              const get = () => useEmpireStore.getState();
              get().resetSession();
              
-             const item = { id: 'drug_coke', name: 'Coke', type: 'drug', illegal: true, weight: 1, quantity: 5 };
+             const item = { id: 'drug_coke', name: 'Coke', type: 'drug', illegal: true, weight: 1, quantity: 5, stackable: true };
              
              const added = get().addItem(item as any);
              if (!added) throw new Error('AddItem failed');
              if (get().inventory.length !== 1 || get().inventory[0].quantity !== 5) throw new Error('Inventory state incorrect after add');
              
-             const item2 = { id: 'drug_coke', name: 'Coke', type: 'drug', illegal: true, weight: 1, quantity: 3 };
+             const item2 = { id: 'drug_coke', name: 'Coke', type: 'drug', illegal: true, weight: 1, quantity: 3, stackable: true };
              get().addItem(item2 as any); // Stack
              if (get().inventory[0].quantity !== 8) throw new Error('Inventory stack failed');
              
