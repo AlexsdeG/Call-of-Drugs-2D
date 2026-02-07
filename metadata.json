@@ -1,0 +1,5 @@
+{
+  "name": "Call of Drugs 2D",
+  "description": "A top-down Drug Empire builder running in the browser using Phaser 3, React, and PeerJS.",
+  "requestFramePermissions": []
+}
