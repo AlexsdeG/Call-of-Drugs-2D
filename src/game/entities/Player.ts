@@ -8,6 +8,7 @@ import { IInteractable } from "../interfaces/IInteractable";
 import { Police } from "./Police";
 import { PerkType } from '../types/PerkTypes';
 import { PERK } from '../../config/constants';
+import { Vehicle } from "./Vehicle";
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   private keys: Record<string, Phaser.Input.Keyboard.Key> = {};
@@ -26,6 +27,11 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   
   // Perks
   private perks: Set<PerkType> = new Set();
+  
+  // Vehicle State
+  public vehicle: Vehicle | null = null;
+  public isDriving: boolean = false;
+  private exitKey!: Phaser.Input.Keyboard.Key;
 
   // Optimization
   private moveVector: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
@@ -132,6 +138,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         slot2: CONTROLS.SLOT_2,
         slot3: CONTROLS.SLOT_3
       }) as Record<string, Phaser.Input.Keyboard.Key>;
+      
+      this.exitKey = scene.input.keyboard.addKey(CONTROLS.INTERACT);
     }
     
     // Mouse Input for Shooting
@@ -223,6 +231,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   update(time: number, delta: number) {
     if (this.isDead) return;
+    
+    // Driving Mode Hook
+    if (this.isDriving && this.vehicle) {
+        this.vehicle.update(time, delta);
+        this.x = this.vehicle.x; // Keep player attached conceptually (transform)
+        this.y = this.vehicle.y;
+        
+        // Check for Exit
+        if (Phaser.Input.Keyboard.JustDown(this.exitKey)) {
+            this.exitVehicle();
+        }
+        return; // Skip normal player update
+    }
 
     // Check Pause
     if (Phaser.Input.Keyboard.JustDown(this.keys.pause)) {
@@ -536,5 +557,45 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
   public hasPowerUp(type: string): boolean {
       return false;
+  }
+
+  // --- VEHICLE SYSTEM ---
+  public enterVehicle(vehicle: Vehicle) {
+      if (this.isDriving || this.isDead) return;
+      
+      this.vehicle = vehicle;
+      this.isDriving = true;
+      this.setVisible(false);
+      this.body!.enable = false;
+      this.setPosition(vehicle.x, vehicle.y);
+      
+      vehicle.setDriver(this);
+      
+      // Update Camera
+      this.scene.cameras.main.startFollow(vehicle, true, 0.1, 0.1);
+      
+      // Notify UI?
+      EventBus.emit('player-entered-vehicle');
+      EventBus.emit('hide-interaction-prompt');
+  }
+  
+  public exitVehicle() {
+      if (!this.isDriving || !this.vehicle) return;
+      
+      const vehicle = this.vehicle;
+      
+      // Place player next to car (simple offset for now, or just same pos)
+      this.setPosition(vehicle.x + 40, vehicle.y); 
+      
+      this.vehicle.removeDriver();
+      this.vehicle = null;
+      this.isDriving = false;
+      this.setVisible(true);
+      this.body!.enable = true;
+      
+      // Reset Camera
+      this.scene.cameras.main.startFollow(this, true, 0.1, 0.1);
+      
+      EventBus.emit('player-exited-vehicle');
   }
 }

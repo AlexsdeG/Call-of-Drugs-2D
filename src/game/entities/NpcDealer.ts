@@ -20,7 +20,8 @@ export class NpcDealer extends Phaser.Physics.Arcade.Sprite implements IInteract
         super(scene, x, y, 'police'); 
 
         scene.add.existing(this);
-        scene.physics.add.existing(this, true); // Static body
+        scene.add.existing(this);
+        scene.physics.add.existing(this); // Dynamic body (default)
         
         this.setBodySize(32, 32);
         this.setOrigin(0.5, 0.5);

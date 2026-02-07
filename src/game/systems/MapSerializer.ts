@@ -42,7 +42,7 @@ export class MapSerializer {
         });
         
         return {
-            app: "call-of-2d-zombies",
+            app: "call-of-drugs-2d",
             name: name,
             version: VERSION,
             width: dims.width,
@@ -60,7 +60,7 @@ export class MapSerializer {
         };
     }
     
-    public static get APP_TAG() { return "call-of-2d-zombies"; }
+    public static get APP_TAG() { return "call-of-drugs-2d"; }
     public static get CURRENT_VERSION() { return VERSION; }
     
     public static deserialize(scene: EditorScene, data: MapData) {
@@ -133,7 +133,7 @@ export class MapSerializer {
         const gameData: MapData = JSON.parse(JSON.stringify(data));
         
         // Add Header
-        (gameData as any).app = "call-of-2d-zombies";
+        (gameData as any).app = "call-of-drugs-2d";
         (gameData as any).format = "game";
         (gameData as any).exportedAt = Date.now();
         

@@ -22,6 +22,7 @@ import { TriggerType } from '../../schemas/scriptSchema';
 import { ProductionUnit } from '../entities/ProductionUnit';
 import { NpcDealer } from '../entities/NpcDealer';
 import { CONTROLS } from '../../config/controls';
+import { Vehicle } from '../entities/Vehicle';
 
 export class CityScene extends Phaser.Scene {
   private _player!: Player;
@@ -50,6 +51,8 @@ export class CityScene extends Phaser.Scene {
   private barricadeGroup!: Phaser.Physics.Arcade.StaticGroup;
   private wallBuyGroup!: Phaser.Physics.Arcade.StaticGroup;
   private mysteryBoxGroup!: Phaser.Physics.Arcade.StaticGroup;
+  private vehicleGroup!: Phaser.Physics.Arcade.Group;
+  private npcGroup!: Phaser.Physics.Arcade.Group; // Group for generic NPCs/Dealers
   
   // Interactable Group - Normal Group (Not Physics) to store references for Player interaction
   private interactableGroup!: Phaser.GameObjects.Group;
@@ -362,6 +365,17 @@ export class CityScene extends Phaser.Scene {
         classType: MysteryBox
     });
     
+    this.vehicleGroup = this.physics.add.group({
+        classType: Vehicle,
+        runChildUpdate: true,
+        collideWorldBounds: true
+    });
+
+    this.npcGroup = this.physics.add.group({
+        classType: NpcDealer, // Default to Dealer for now if generic, or just Group
+        runChildUpdate: true
+    });
+    
     this.interactableGroup = this.add.group(); 
 
     // 1. Map & Pathfinding Init
@@ -439,7 +453,9 @@ export class CityScene extends Phaser.Scene {
                     this.mysteryBoxGroup,
                     undefined, // perkMachineGroup removed
                     undefined, // packAPunchGroup removed
-                    this.customWallGroup
+                    this.customWallGroup,
+                    this.vehicleGroup,
+                    this.npcGroup
                 );
                 
                 // --- Register Interactables & Colliders ---
@@ -451,6 +467,28 @@ export class CityScene extends Phaser.Scene {
                     this.physics.add.collider(this.player, mb);
                     return true; 
                 });
+                
+                this.vehicleGroup.children.each(v => {
+                    this.interactableGroup.add(v);
+                    return true;
+                });
+
+                this.npcGroup.children.each(n => {
+                    this.interactableGroup.add(n);
+                    return true;
+                });
+                
+                // Vehicle Collisions
+                this.physics.add.collider(this.vehicleGroup, this.wallLayer!);
+                this.physics.add.collider(this.vehicleGroup, this.obstacleGroup);
+                this.physics.add.collider(this.vehicleGroup, this.customWallGroup);
+                this.physics.add.collider(this.vehicleGroup, this.doorGroup);
+                this.physics.add.collider(this.vehicleGroup, this.barricadeGroup);
+                // Player vs Vehicle (Pushable?) or handled by interaction?
+                this.physics.add.collider(this.player, this.vehicleGroup);
+
+                // NPC Collisions
+                this.physics.add.collider(this.player, this.npcGroup);
                 
                 // Collisions for MysteryBox
                 this.physics.add.collider(this.policeGroup, this.mysteryBoxGroup);
@@ -583,8 +621,8 @@ export class CityScene extends Phaser.Scene {
       // 6. Clear Groups
       const groups = [
           this.bulletGroup, this.obstacleGroup, this.targetGroup, this.policeGroup,
-          this.customWallGroup, this.doorGroup, this.barricadeGroup, this.wallBuyGroup,
-          this.mysteryBoxGroup
+          this.customWallGroup,          this.doorGroup, this.barricadeGroup, this.wallBuyGroup,
+          this.mysteryBoxGroup, this.vehicleGroup, this.npcGroup
       ];
       
       groups.forEach(g => {

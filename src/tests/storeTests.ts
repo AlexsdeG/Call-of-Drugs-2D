@@ -5,81 +5,93 @@ export const storeTests: GameTest[] = [
     {
         name: 'Store: Initial State',
         run: async () => {
+             // Reset first to ensure clean state
+            useEmpireStore.getState().resetSession();
+            
             const state = useEmpireStore.getState();
             if (state.cash !== 100) throw new Error(`Initial cash should be 100, got ${state.cash}`);
             if (state.bank !== 0) throw new Error(`Initial bank should be 0, got ${state.bank}`);
             if (state.heat !== 0) throw new Error(`Initial heat should be 0, got ${state.heat}`);
             if (state.day !== 1) throw new Error(`Initial day should be 1, got ${state.day}`);
             if (state.inventory.length !== 0) throw new Error(`Initial inventory should be empty`);
+            return true;
         }
     },
     {
         name: 'Store: Cash Transactions',
         run: async () => {
-            const store = useEmpireStore.getState();
-            store.resetSession();
+            const get = () => useEmpireStore.getState();
+            get().resetSession();
             
-            store.addCash(50);
-            if (store.cash !== 150) throw new Error(`Cash add failed. Expected 150, got ${store.cash}`);
+            get().addCash(50);
+            if (get().cash !== 150) throw new Error(`Cash add failed. Expected 150, got ${get().cash}`);
             
-            const success = store.removeCash(100);
-            if (!success || store.cash !== 50) throw new Error(`Cash remove failed. Expected 50, got ${store.cash}`);
+            const success = get().removeCash(100);
+            if (!success || get().cash !== 50) throw new Error(`Cash remove failed. Expected 50, got ${get().cash}`);
             
-            const fail = store.removeCash(100);
-            if (fail || store.cash !== 50) throw new Error(`Cash remove allowed below zero. Expected fail.`);
+            const fail = get().removeCash(100);
+            if (fail || get().cash !== 50) throw new Error(`Cash remove allowed below zero. Expected fail.`);
+            
+            return true;
         }
     },
     {
         name: 'Store: Bank Transactions',
         run: async () => {
-            const store = useEmpireStore.getState();
-            store.resetSession();
-            store.addCash(1000); // 1100 total
+            const get = () => useEmpireStore.getState();
+            get().resetSession();
+            get().addCash(1000); // 1100 total
             
-            store.depositToBank(500);
-            if (store.cash !== 600 || store.bank !== 500) throw new Error(`Deposit failed. Cash: ${store.cash}, Bank: ${store.bank}`);
+            get().depositToBank(500);
+            if (get().cash !== 600 || get().bank !== 500) throw new Error(`Deposit failed. Cash: ${get().cash}, Bank: ${get().bank}`);
             
-            store.withdrawFromBank(200);
-            if (store.cash !== 800 || store.bank !== 300) throw new Error(`Withdraw failed. Cash: ${store.cash}, Bank: ${store.bank}`);
+            get().withdrawFromBank(200);
+            if (get().cash !== 800 || get().bank !== 300) throw new Error(`Withdraw failed. Cash: ${get().cash}, Bank: ${get().bank}`);
+            
+            return true;
         }
     },
     {
         name: 'Store: Heat Management',
         run: async () => {
-            const store = useEmpireStore.getState();
-            store.resetSession();
+            const get = () => useEmpireStore.getState();
+            get().resetSession();
             
-            store.addHeat(50);
-            if (store.heat !== 50) throw new Error(`Heat add failed. Got ${store.heat}`);
+            get().addHeat(50);
+            if (get().heat !== 50) throw new Error(`Heat add failed. Got ${get().heat}`);
             
-            store.addHeat(60); // Should cap at 100
-            if (store.heat !== 100) throw new Error(`Heat cap failed. Got ${store.heat}`);
+            get().addHeat(60); // Should cap at 100
+            if (get().heat !== 100) throw new Error(`Heat cap failed. Got ${get().heat}`);
             
-            store.decayHeat(30);
-            if (store.heat !== 70) throw new Error(`Heat decay failed. Got ${store.heat}`);
+            get().decayHeat(30);
+            if (get().heat !== 70) throw new Error(`Heat decay failed. Got ${get().heat}`);
+            
+            return true;
         }
     },
     {
         name: 'Store: Inventory Management',
         run: async () => {
-             const store = useEmpireStore.getState();
-             store.resetSession();
+             const get = () => useEmpireStore.getState();
+             get().resetSession();
              
              const item = { id: 'drug_coke', name: 'Coke', type: 'drug', illegal: true, weight: 1, quantity: 5 };
              
-             const added = store.addItem(item as any);
+             const added = get().addItem(item as any);
              if (!added) throw new Error('AddItem failed');
-             if (store.inventory.length !== 1 || store.inventory[0].quantity !== 5) throw new Error('Inventory state incorrect after add');
+             if (get().inventory.length !== 1 || get().inventory[0].quantity !== 5) throw new Error('Inventory state incorrect after add');
              
              const item2 = { id: 'drug_coke', name: 'Coke', type: 'drug', illegal: true, weight: 1, quantity: 3 };
-             store.addItem(item2 as any); // Stack
-             if (store.inventory[0].quantity !== 8) throw new Error('Inventory stack failed');
+             get().addItem(item2 as any); // Stack
+             if (get().inventory[0].quantity !== 8) throw new Error('Inventory stack failed');
              
-             store.removeItem('drug_coke', 4);
-             if (store.inventory[0].quantity !== 4) throw new Error('RemoveItem failed');
+             get().removeItem('drug_coke', 4);
+             if (get().inventory[0].quantity !== 4) throw new Error('RemoveItem failed');
              
-             store.removeItem('drug_coke', 4);
-             if (store.inventory.length !== 0) throw new Error('RemoveItem cleanup failed');
+             get().removeItem('drug_coke', 4);
+             if (get().inventory.length !== 0) throw new Error('RemoveItem cleanup failed');
+             
+             return true;
         }
     }
 ];

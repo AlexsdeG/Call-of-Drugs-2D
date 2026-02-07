@@ -10,6 +10,8 @@ import { Player } from '../entities/Player';
 import { WallBuy } from '../entities/WallBuy';
 import { MysteryBox } from '../entities/MysteryBox';
 import { PerkType } from '../types/PerkTypes';
+import { Vehicle } from '../entities/Vehicle';
+import { NpcDealer } from '../entities/NpcDealer';
 
 export class MapManager {
     private scene: Phaser.Scene;
@@ -100,7 +102,9 @@ export class MapManager {
         mysteryBoxGroup?: Phaser.Physics.Arcade.StaticGroup,
         perkMachineGroup?: Phaser.Physics.Arcade.StaticGroup,
         packAPunchGroup?: Phaser.Physics.Arcade.StaticGroup,
-        customWallGroup?: Phaser.Physics.Arcade.StaticGroup
+        customWallGroup?: Phaser.Physics.Arcade.StaticGroup,
+        vehicleGroup?: Phaser.Physics.Arcade.Group,
+        npcGroup?: Phaser.Physics.Arcade.Group
     ) {
         if (!mapData.objects || !this.pathfindingManager) return;
         
@@ -231,6 +235,16 @@ export class MapManager {
                      if (body) {
                         body.updateFromGameObject();
                      }
+                 }
+             } else if (obj.type === 'vehicle') {
+                 if (vehicleGroup) {
+                    const vehicle = new Vehicle(this.scene, obj.x, obj.y);
+                    vehicleGroup.add(vehicle);
+                 }
+             } else if (obj.type === 'dealer') {
+                 if (npcGroup) {
+                     const dealer = new NpcDealer(this.scene, obj.x, obj.y);
+                     npcGroup.add(dealer);
                  }
              }
         });

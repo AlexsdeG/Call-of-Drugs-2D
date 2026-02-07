@@ -84,7 +84,7 @@ const bar5 = { type: "barricade", x: (houseX + houseW) * 32 + 16, y: 30 * 32 + 1
 
 
 export const DEBUG_MAP: MapData = {
-    app: "call-of-2d-zombies",
+    app: "call-of-drugs-2d",
     name: "Garden House",
     version: "1.2.0",
     width: W,
@@ -135,5 +135,28 @@ export const DEBUG_MAP: MapData = {
         // --- PACK-A-PUNCH ---
         // Garden (Bottom Right)
         { type: "pack_a_punch", x: 38 * 32, y: 38 * 32 },
+        {
+            "id": "100",
+            "type": "vehicle",
+            "x": 400,
+            "y": 400,
+            "width": 64,
+            "height": 32,
+            "properties": {
+                "rotation": 0,
+                "visible": true
+            }
+        },
+        {
+            "id": "101",
+            "type": "dealer",
+            "x": 600,
+            "y": 400,
+            "width": 32,
+            "height": 32,
+            "properties": {
+                "visible": true
+            }
+        }
     ]
 };
