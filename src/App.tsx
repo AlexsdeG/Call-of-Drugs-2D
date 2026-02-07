@@ -11,6 +11,7 @@ import './tests/weaponTests';
 import './tests/mapTests';
 import './tests/policeTests';
 import './tests/interactionTests'; 
+import './tests/dealerTests';
 import './tests/editorTests';
 import { storeTests } from './tests/storeTests';
 import { runProfilePersistenceTest } from './tests/profilePersistenceTest';
@@ -21,6 +22,7 @@ import Phaser from 'phaser';
 // --- UI COMPONENTS ---
 import { MenuOverlay } from './game/ui/Menu/MenuOverlay';
 import { PostGameStatsOverlay } from './game/ui/PostGameStatsOverlay';
+import { InventoryUI } from './game/ui/Inventory/InventoryUI';
 
 // --- HELPER HOOKS ---
 function usePrevious<T>(value: T): T | undefined {
@@ -157,8 +159,11 @@ const DebugOverlay = () => {
   );
 };
 
+// ... (other imports)
+
 const HUD = () => {
   const cash = useEmpireStore((state) => state.cash);
+  const bank = useEmpireStore((state) => state.bank);
   const day = useEmpireStore((state) => state.day);
   const heat = useEmpireStore((state) => state.heat);
   const [isReloading, setIsReloading] = useState(false);
@@ -170,7 +175,7 @@ const HUD = () => {
   const currentAmmoRef = useRef<HTMLSpanElement>(null);
   const maxAmmoRef = useRef<HTMLSpanElement>(null);
 
-  // Refs for state persistence across re-renders (fixes flash of 0)
+  // Refs for state persistence across re-renders
   const lastAmmo = useRef(0);
   const lastMaxAmmo = useRef(0);
 
@@ -214,9 +219,9 @@ const HUD = () => {
     };
 
     EventBus.on('player-stats-update', handleStatsUpdate);
-    // EventBus.on('round-start', handleRoundStart); // Removed: Store handles round number
     EventBus.on('round-complete', handleRoundComplete);
 
+    // Initial sync
     const initial = useEmpireStore.getState().playerStats;
     handleStatsUpdate({
         stamina: initial.stamina,
@@ -227,7 +232,6 @@ const HUD = () => {
 
     return () => {
       EventBus.off('player-stats-update', handleStatsUpdate);
-      // EventBus.off('round-start', handleRoundStart);
       EventBus.off('round-complete', handleRoundComplete);
     };
   }, []);
@@ -238,6 +242,9 @@ const HUD = () => {
          <div className="flex flex-col gap-2">
             <div className="text-green-400 text-3xl font-black font-mono drop-shadow-md tracking-wider">
                 ${cash.toLocaleString()}
+            </div>
+            <div className="text-blue-400 text-xl font-bold font-mono tracking-wider drop-shadow-md">
+                BANK: ${bank.toLocaleString()}
             </div>
             <div className={`text-xl font-bold font-mono tracking-wider ${heat > 80 ? 'text-red-600 animate-pulse' : heat > 50 ? 'text-orange-500' : 'text-blue-400'}`}>
                 HEAT: {heat}%
@@ -251,14 +258,11 @@ const HUD = () => {
       <div className="flex justify-between items-end w-full">
           {/* Wave Counter (Bottom Left) */}
           <div className="flex flex-col items-start gap-1">
-              {/* Wave Clear Notification - Now smaller and above round text */}
               {showWaveClear && (
                  <div className="text-2xl font-bold text-yellow-400 animate-bounce tracking-widest drop-shadow-xl mb-1">
                      WAVE SURVIVED
                  </div>
               )}
-          
-
           </div>
 
           <div className="flex flex-col items-end gap-2 w-64">
@@ -280,12 +284,12 @@ const HUD = () => {
                
                {/* Ammo Display */}
                <div className="text-yellow-500 text-2xl font-bold flex items-center justify-end h-8">
-                  {/* Spinner - Visible only when reloading */}
+                  {/* Spinner */}
                   <div className={`w-8 flex justify-center mr-1 ${isReloading ? '' : 'hidden'}`}>
                       <Loader2 className="w-6 h-6 animate-spin text-yellow-500" />
                   </div>
                   
-                  {/* Ammo Count - Visible only when NOT reloading */}
+                  {/* Ammo Count */}
                   <span 
                       ref={currentAmmoRef} 
                       className={`w-8 text-right mr-1 ${isReloading ? 'hidden' : ''}`}
@@ -346,8 +350,8 @@ const InteractionPrompt = () => {
 const WeaponNameToast = () => {
     const [name, setName] = useState<string | null>(null);
     const [visible, setVisible] = useState(false);
-    const fadeTimer = useRef<NodeJS.Timeout | null>(null);
-    const hideTimer = useRef<NodeJS.Timeout | null>(null);
+    const fadeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     useEffect(() => {
         const handleSwitch = (weaponName: string) => {
@@ -495,6 +499,9 @@ const App: React.FC = () => {
            {!isLoaded && <LoadingOverlay />}
            
            {isLoaded && gameState === GameState.MENU && <MenuOverlay />}
+           
+           <InventoryUI />
+           
            {(gameState === GameState.GAME || isPreviewMode) && <HUD />}
            {gameState === GameState.PAUSED && <PauseMenu isPreview={isPreviewMode} />}
            {gameState === GameState.POST_GAME_STATS && <PostGameStatsOverlay />}

@@ -100,7 +100,8 @@ src/
 * **Action:**
 * Create `src/game/systems/InventoryManager.ts`.
 * Define `ItemType` interface (id, name, weight, illegal).
-* Implement methods: `addItem`, `removeItem`, `hasItem`.
+* Implement methods: `addItem`, `removeItem`, `hasItem` , `getTotalWeight`, `isOverWeight`, `weightLeft`.
+* check for max weight.
 * Connect to `useEmpireStore`.
 
 

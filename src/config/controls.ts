@@ -20,7 +20,7 @@ export const CONTROLS = {
   
   // UI / Meta
   PAUSE: Phaser.Input.Keyboard.KeyCodes.ESC,
-  INVENTORY: Phaser.Input.Keyboard.KeyCodes.TAB,
+  INVENTORY: Phaser.Input.Keyboard.KeyCodes.I,
   SCOREBOARD: Phaser.Input.Keyboard.KeyCodes.CAPS_LOCK,
   
   // Mouse (Handled via Pointer events, defined here for reference)

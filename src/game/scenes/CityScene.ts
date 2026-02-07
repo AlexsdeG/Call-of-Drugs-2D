@@ -19,6 +19,9 @@ import { useEmpireStore } from '../../store/useEmpireStore';
 import { GameState } from '../../types';
 import { ScriptEngine } from '../systems/ScriptEngine';
 import { TriggerType } from '../../schemas/scriptSchema';
+import { ProductionUnit } from '../entities/ProductionUnit';
+import { NpcDealer } from '../entities/NpcDealer';
+import { CONTROLS } from '../../config/controls';
 
 export class CityScene extends Phaser.Scene {
   private _player!: Player;
@@ -59,6 +62,9 @@ export class CityScene extends Phaser.Scene {
   private particleManager!: Phaser.GameObjects.Particles.ParticleEmitter;
   private bloodManager!: Phaser.GameObjects.Particles.ParticleEmitter;
   private crosshair!: Phaser.GameObjects.Graphics;
+  
+  // Input
+  private keys!: any;
 
   private isGameOver: boolean = false;
   private isReady: boolean = false; // Initialization Flag
@@ -278,6 +284,9 @@ export class CityScene extends Phaser.Scene {
     //     this.powerUpGroup.add(pu);
     // });
 
+    // Initialize Controls
+    this.keys = this.input.keyboard.addKeys(CONTROLS);
+
     // Global PowerUp Effects
     EventBus.on('trigger-carpenter', () => {
         if (!this.scene.isActive()) return;
@@ -322,6 +331,16 @@ export class CityScene extends Phaser.Scene {
         const debugY = 12 * 32; 
         
         console.log("DEBUG: Initialized at", debugX, debugY);
+
+        // --- Phase 2 Step 2.2 Test: Production Unit ---
+        const productionUnit = new ProductionUnit(this, debugX + 100, debugY);
+        this.interactableGroup.add(productionUnit);
+        this.physics.add.collider(this.player, productionUnit);
+
+        // --- Phase 2 Step 2.3 Test: Dealer ---
+        const dealer = new NpcDealer(this, debugX - 100, debugY);
+        this.interactableGroup.add(dealer);
+        this.physics.add.collider(this.player, dealer); 
     });
 
     // 0. Setup Physics Groups
@@ -593,6 +612,14 @@ export class CityScene extends Phaser.Scene {
 
   update(time: number, delta: number) {
     if (this.isGameOver || !this.isReady) return; // Block updates until ready
+
+        if (Phaser.Input.Keyboard.JustDown(this.keys.SCOREBOARD)) {
+            // Scoreboard logic (if any)
+        }
+
+        if (Phaser.Input.Keyboard.JustDown(this.keys.INVENTORY)) {
+            useEmpireStore.getState().toggleInventory();
+        }
 
     if (this.player) {
       this.player.update(time, delta);

@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.10] - 2026-02-07
+
+### Added
+- **Dealer NPC:** `NpcDealer` implemented. Players can now sell illegal items for cash.
+- **Inventory UI:** New `InventoryUI` component accessible via 'I' key. Shows items, weights, and legality.
+- **HUD Update:** Added Bank balance display.
+- **Empire Store Actions:** Added `toggleInventory` and improved item interaction logic.
+- **Tests:** Added `dealerTests.ts` covering sales logic.
+
+## [0.2.9] - 2026-02-07
+### Added
+- **Phase 2 Step 2.1 (Inventory System)**:
+  - Implemented `InventoryManager` and `Item` interface.
+  - Connected Inventory logic to `useEmpireStore` (Add, Remove, Weight Check).
+- **Phase 2 Step 2.2 (Production Entity)**:
+  - Added `ProductionUnit` entity (Refactored from Barricade).
+  - Implemented Manual Processing Loop: Idle -> Hold F (Process) -> Ready -> Collect.
+  - Added visual states (Tint/Text) and Progress Bar.
+
 ## [0.2.8] - 2026-02-07
 ### Changed
 - **Project Rename**: Transformed into "Drug Empire".
