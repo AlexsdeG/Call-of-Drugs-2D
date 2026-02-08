@@ -152,4 +152,33 @@ export const WEAPON_DEFS = {
   export const DEBUG = {
     SHOW_COLLIDERS: (import.meta as any).env?.DEV ?? false,
     SHOW_PATHFINDING: false,
+    SHOW_POLICE_VISION: (import.meta as any).env?.DEV ?? false,
+  } as const;
+
+  export const POLICE_VISION = {
+    CONE_ANGLE: 60, // Degrees (narrower than player)
+    CONE_RANGE: 250, // Pixels
+    DETECT_DELAY: 500, // ms before chase triggers
+    PATROL_SPEED: 60, // pixels per second
+    CHASE_SPEED: 130, // pixels per second
+  } as const;
+
+  export const HEAT = {
+    MAX: 100,
+    DECAY_RATE: 1, // per second
+    SELL_INCREASE: 5, // per illegal item sold
+    KILL_POLICE_INCREASE: 25, // per police killed
+    SPOTTED_INCREASE: 10, // when seen with illegal items
+    // Thresholds for star levels (0-5)
+    THRESHOLDS: {
+      STAR_1: 20,
+      STAR_2: 40,
+      STAR_3: 60,
+      STAR_4: 80,
+      STAR_5: 95,
+    },
+    // AI behavior thresholds
+    IGNORE_THRESHOLD: 25, // Below this, police don't care
+    INVESTIGATE_THRESHOLD: 50, // Suspicious behavior
+    CHASE_THRESHOLD: 75, // Active pursuit
   } as const;

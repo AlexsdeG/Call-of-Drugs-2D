@@ -179,6 +179,18 @@ const HUD = () => {
   const lastAmmo = useRef(0);
   const lastMaxAmmo = useRef(0);
 
+  // Calculate heat stars (0-5)
+  const getHeatStars = (heatValue: number): number => {
+    if (heatValue >= 95) return 5;
+    if (heatValue >= 80) return 4;
+    if (heatValue >= 60) return 3;
+    if (heatValue >= 40) return 2;
+    if (heatValue >= 20) return 1;
+    return 0;
+  };
+
+  const heatStars = getHeatStars(heat);
+
   useEffect(() => {
     const handleStatsUpdate = (data: { stamina?: number; health?: number; ammo?: number; maxAmmo?: number, isReloading?: boolean }) => {
        // Stamina
@@ -246,8 +258,20 @@ const HUD = () => {
             <div className="text-blue-400 text-xl font-bold font-mono tracking-wider drop-shadow-md">
                 BANK: ${bank.toLocaleString()}
             </div>
-            <div className={`text-xl font-bold font-mono tracking-wider ${heat > 80 ? 'text-red-600 animate-pulse' : heat > 50 ? 'text-orange-500' : 'text-blue-400'}`}>
-                HEAT: {heat}%
+            {/* Heat Stars Display */}
+            <div className="flex items-center gap-1">
+               {[1, 2, 3, 4, 5].map((star) => (
+                 <span 
+                   key={star}
+                   className={`text-2xl transition-all duration-200 ${
+                     star <= heatStars 
+                       ? 'text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse' 
+                       : 'text-gray-700'
+                   }`}
+                 >
+                   ★
+                 </span>
+               ))}
             </div>
          </div>
          <div className="text-yellow-100 text-2xl font-bold font-mono tracking-widest drop-shadow-md">

@@ -3,6 +3,7 @@ import { IInteractable } from '../interfaces/IInteractable';
 import { Player } from './Player';
 import { InventoryManager } from '../systems/InventoryManager';
 import { useEmpireStore } from '../../store/useEmpireStore';
+import { EventBus } from '../EventBus';
 
 export class NpcDealer extends Phaser.Physics.Arcade.Sprite implements IInteractable {
     
@@ -79,7 +80,8 @@ export class NpcDealer extends Phaser.Physics.Arcade.Sprite implements IInteract
 
         if (totalCount > 0) {
             useEmpireStore.getState().addCash(totalValue);
-            useEmpireStore.getState().addHeat(5); // Risk
+            // fix: Emit event so HeatManager handles logic (and verifies it works)
+            EventBus.emit('report-crime', { type: 'deal_drugs' });
 
             this.showFeedback(`Sold ${totalCount}! +$${totalValue}`);
             

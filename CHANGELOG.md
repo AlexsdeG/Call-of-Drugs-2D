@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.11] - 2026-02-08
+
+### Added
+- **Phase 4: Police AI & Heat System**
+  - **VisionCone System:** New geometry-based detection with wall occlusion and detection timer.
+  - **Police AI Refactor:** New state machine (Patrol → Investigate → Chase → Arrest).
+  - **HeatManager:** Global heat/wanted level tracking with time-based decay.
+  - **Heat Stars HUD:** GTA-style 1-5 star wanted display (replaces percentage).
+  - **Police Spawn Points:** Added to default map for patrol zones.
+  - **Crime Events:** Heat increases from selling drugs, being spotted with illegal items, and killing police.
+  
+### Changed
+- Police now use VisionCone for player detection (angle + range + LOS checks).
+- Police behavior tied to heat thresholds (ignore < 25, investigate 25-75, chase > 75).
+
 ## [0.2.10] - 2026-02-07
 
 ### Added

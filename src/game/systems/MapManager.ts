@@ -246,6 +246,20 @@ export class MapManager {
                      const dealer = new NpcDealer(this.scene, obj.x, obj.y);
                      npcGroup.add(dealer);
                  }
+             } else if (obj.type === 'police_spawn') {
+                 if (policeGroup) {
+                    // Create Police at this location
+                    const police = new Police(
+                        this.scene,
+                        obj.x,
+                        obj.y,
+                        player,
+                        this.pathfindingManager!,
+                        this.wallLayer,
+                        targetLayer
+                    );
+                    policeGroup.add(police);
+                 }
              }
         });
         

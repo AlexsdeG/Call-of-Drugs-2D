@@ -98,43 +98,11 @@ export const DEBUG_MAP: MapData = {
         { type: "spawn", x: spawnX * 32, y: spawnY * 32 },
         
         door1, door2,
-        bar1, bar2, bar3, bar4, bar5,
-
-        // Spawners (Located in the Garden, outside the house walls)
-        // Zone 0 (Active at start) - Left side
-        { type: "spawner", x: 5 * 32, y: 25 * 32, properties: { zone: 0 } },
-        { type: "spawner", x: 25 * 32, y: 5 * 32, properties: { zone: 1 } }, // Top garden
-        { type: "spawner", x: 25 * 32, y: 45 * 32, properties: { zone: 2 } }, // Bottom garden
-        
-        // Zone 1/2 Spawners (Right side garden)
-        { type: "spawner", x: 45 * 32, y: 25 * 32, properties: { zone: 2 } },
-
         // --- ECONOMY ---
         // WallBuy (Spawn Room - Left Wall)
         { type: "wall_buy", x: 10 * 32 + 16, y: 22 * 32 + 16, properties: { weapon: "SHOTGUN", cost: 500 } },
         { type: "wall_buy", x: 25 * 32 + 16, y: 22 * 32 + 16, properties: { weapon: "RIFLE", cost: 1000 } },
         
-        // Mystery Boxes (One in each room)
-        // Spawn Room
-        { type: "mystery_box", x: 22 * 32, y: 25 * 32, properties: { rotation: 90, first: true } },
-        // Top-Right Room
-        { type: "mystery_box", x: 30 * 32, y: 20 * 32 },
-        // Bottom-Right Room
-        { type: "mystery_box", x: 30 * 32, y: 30 * 32 },
-
-        // --- PERKS ---
-        // Spawn Room: Quick Revive? No, let's put Speed Cola
-        { type: "perk_machine", x: 18 * 32, y: 25 * 32, properties: { perk: "SPEED_COLA" } },
-        // Top-Right Room: Juggernog
-        { type: "perk_machine", x: 34 * 32, y: 16 * 32, properties: { perk: "JUGGERNOG" } },
-        // Bottom-Right Room: Double Tap
-        { type: "perk_machine", x: 34 * 32, y: 34 * 32, properties: { perk: "DOUBLE_TAP" } },
-        // Garden (Outside): Stamin-Up
-        { type: "perk_machine", x: 11 * 32, y: 11 * 32, properties: { perk: "STAMIN_UP" } },
-
-        // --- PACK-A-PUNCH ---
-        // Garden (Bottom Right)
-        { type: "pack_a_punch", x: 38 * 32, y: 38 * 32 },
         {
             "id": "100",
             "type": "vehicle",
@@ -157,6 +125,12 @@ export const DEBUG_MAP: MapData = {
             "properties": {
                 "visible": true
             }
-        }
+        },
+
+        // --- PHASE 4: POLICE SPAWNS ---
+        // Police patrol points in the garden (outside area)
+        { type: "police_spawn", x: 5 * 32, y: 15 * 32, properties: { patrolZone: 0 } },
+        { type: "police_spawn", x: 45 * 32, y: 15 * 32, properties: { patrolZone: 1 } },
+        { type: "police_spawn", x: 25 * 32, y: 45 * 32, properties: { patrolZone: 2 } }
     ]
 };

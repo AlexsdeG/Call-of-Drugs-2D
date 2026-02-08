@@ -23,6 +23,7 @@ import { ProductionUnit } from '../entities/ProductionUnit';
 import { NpcDealer } from '../entities/NpcDealer';
 import { CONTROLS } from '../../config/controls';
 import { Vehicle } from '../entities/Vehicle';
+import { HeatManager } from '../systems/HeatManager';
 
 export class CityScene extends Phaser.Scene {
   private _player!: Player;
@@ -31,6 +32,7 @@ export class CityScene extends Phaser.Scene {
     return this._player;
   }
   private visionManager!: VisionManager;
+  private heatManager!: HeatManager;
   private mapManager!: MapManager;
   private pathfindingManager!: PathfindingManager;
   public scriptEngine!: ScriptEngine;
@@ -536,6 +538,9 @@ export class CityScene extends Phaser.Scene {
                 this.visionManager.setup(this.player, visionObstacles);
                 this.visionManager.setTargetLayer(this.targetLayer);
 
+                // Heat System (Phase 4)
+                this.heatManager = new HeatManager(this);
+
                 // 8. Camera
                 this.cameras.main.startFollow(this.player, true, 0.1, 0.1);
                 this.cameras.main.setZoom(WORLD.DEFAULT_ZOOM);
@@ -702,7 +707,13 @@ export class CityScene extends Phaser.Scene {
     
     // Update Spawners (mainly for activation status if needed)
     // Update Spawners (mainly for activation status if needed)
+    // Update Spawners (mainly for activation status if needed)
     this.spawners.forEach(s => s.update(time));
+    
+    // Update Heat System (Phase 4)
+    if (this.heatManager) {
+        this.heatManager.update(time, delta);
+    }
     
     // Update Production Units
     if (this.productionGroup) {
