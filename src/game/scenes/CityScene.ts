@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { Player } from '../entities/Player';
 import { EventBus } from '../EventBus';
-import { WORLD, WEAPON_DEFS } from '../../config/constants';
+import { WORLD } from '../../config/constants';
 import { VisionManager } from '../systems/VisionManager';
 import { Projectile } from '../entities/Projectile';
 import { WeaponAttributes } from '../types/WeaponTypes';
@@ -27,6 +27,9 @@ import { Vehicle } from '../entities/Vehicle';
 export class CityScene extends Phaser.Scene {
   private _player!: Player;
   public get player(): Player { return this._player; }
+  public setDriver(_player: Player) {
+    return this._player;
+  }
   private visionManager!: VisionManager;
   private mapManager!: MapManager;
   private pathfindingManager!: PathfindingManager;
@@ -56,6 +59,9 @@ export class CityScene extends Phaser.Scene {
   
   // Interactable Group - Normal Group (Not Physics) to store references for Player interaction
   private interactableGroup!: Phaser.GameObjects.Group;
+  
+  // Production Units
+  private productionGroup!: Phaser.GameObjects.Group;
 
   private floorLayer?: Phaser.Tilemaps.TilemapLayer;
   private wallLayer?: Phaser.Tilemaps.TilemapLayer;
@@ -148,6 +154,11 @@ export class CityScene extends Phaser.Scene {
             useEmpireStore.getState().setGameState(GameState.GAME_OVER);
         }
     };
+    
+    // Inventory Check - Update Mouse Cursor
+    // const store = useEmpireStore.getState();
+    // Subscribe or Check in update loop? Update loop is fine for cursor/pause logic
+
   }
 
   private async saveSessionStats(nextState: GameState) {
@@ -338,6 +349,7 @@ export class CityScene extends Phaser.Scene {
         // --- Phase 2 Step 2.2 Test: Production Unit ---
         const productionUnit = new ProductionUnit(this, debugX + 100, debugY);
         this.interactableGroup.add(productionUnit);
+        this.productionGroup.add(productionUnit); // Add to update loop
         this.physics.add.collider(this.player, productionUnit);
 
         // --- Phase 2 Step 2.3 Test: Dealer ---
@@ -377,6 +389,7 @@ export class CityScene extends Phaser.Scene {
     });
     
     this.interactableGroup = this.add.group(); 
+    this.productionGroup = this.add.group({ runChildUpdate: true }); 
 
     // 1. Map & Pathfinding Init
     this.pathfindingManager = new PathfindingManager(this);
@@ -651,13 +664,30 @@ export class CityScene extends Phaser.Scene {
   update(time: number, delta: number) {
     if (this.isGameOver || !this.isReady) return; // Block updates until ready
 
-        if (Phaser.Input.Keyboard.JustDown(this.keys.SCOREBOARD)) {
-            // Scoreboard logic (if any)
-        }
+    // Check for Inventory/Pause early so they can be closed
+    if (Phaser.Input.Keyboard.JustDown(this.keys.INVENTORY)) {
+        useEmpireStore.getState().toggleInventory();
+    }
+    
+    // Close inventory with Escape if it's open
+    if (useEmpireStore.getState().isInventoryOpen && Phaser.Input.Keyboard.JustDown(this.keys.PAUSE)) {
+        useEmpireStore.getState().setInventoryOpen(false);
+    }
+    
+    // Inventory Pause Logic
+    if (useEmpireStore.getState().isInventoryOpen) {
+        this.input.setDefaultCursor('default');
+        // Stop Player Movement/Actions by returning early (simulating pause)
+        // We still want to draw the scene, just not update game logic
+        return;
+    } else {
+        this.input.setDefaultCursor('crosshair');
+    }
 
-        if (Phaser.Input.Keyboard.JustDown(this.keys.INVENTORY)) {
-            useEmpireStore.getState().toggleInventory();
-        }
+    if (Phaser.Input.Keyboard.JustDown(this.keys.SCOREBOARD)) {
+        // Scoreboard logic (if any)
+    }
+
 
     if (this.player) {
       this.player.update(time, delta);
@@ -671,7 +701,16 @@ export class CityScene extends Phaser.Scene {
     // if (this.gameMode) this.gameMode.update(time, delta);
     
     // Update Spawners (mainly for activation status if needed)
+    // Update Spawners (mainly for activation status if needed)
     this.spawners.forEach(s => s.update(time));
+    
+    // Update Production Units
+    if (this.productionGroup) {
+        this.productionGroup.children.each((child) => {
+            child.update(time, delta);
+            return true;
+        });
+    }
   }
 
   private updateCrosshair() {
@@ -804,7 +843,7 @@ export class CityScene extends Phaser.Scene {
       // Pickup Interaction handled by Player or direct overlap if needed
       // PowerUp pickup removed for now
       
-      this.physics.add.collider(this.bulletGroup, this.doorGroup, (b, d) => this.handleBulletImpact(b as Projectile));
+      this.physics.add.collider(this.bulletGroup, this.doorGroup, (b, _d) => this.handleBulletImpact(b as Projectile));
       // this.physics.add.collider(this.bulletGroup, this.barricadeGroup, (b, bar) => this.handleBulletImpact(b as Projectile)); // Removed to allow bullets to pass through
 
       this.physics.add.collider(this.policeGroup, this.doorGroup);
@@ -813,7 +852,7 @@ export class CityScene extends Phaser.Scene {
           const police = z as Police;
           const barricade = b as Barricade;
           police.handleCollisionWithBarricade(barricade);
-      }, (z, b) => {
+      }, (_z, b) => {
           const barricade = b as Barricade;
           return barricade.hasPanels();
       });
@@ -830,7 +869,7 @@ export class CityScene extends Phaser.Scene {
       });
   }
 
-  private handleBulletImpact(bullet: Projectile, object?: Phaser.GameObjects.Sprite) {
+  private handleBulletImpact(bullet: Projectile, _object?: Phaser.GameObjects.Sprite) {
       if (!this.scene.isActive()) return;
       const emitter = this.data.get('sparkEmitter') as Phaser.GameObjects.Particles.ParticleEmitter;
       if(emitter) emitter.explode(5, bullet.x, bullet.y);
@@ -905,7 +944,7 @@ export class CityScene extends Phaser.Scene {
       bullet.disableBody(true, true);
   }
 
-  private showDamageText(x: number, y: number, amount: number, type: string) {
+  private showDamageText(x: number, y: number, amount: number, _type: string) {
       if (!this.scene.isActive()) return;
       const txt = this.add.text(x, y, amount.toString(), {
           fontFamily: 'monospace', fontSize: '16px', color: '#ffffff', stroke: '#000000', strokeThickness: 2

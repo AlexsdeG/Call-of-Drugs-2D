@@ -59,9 +59,9 @@ export const MenuOverlay = () => {
                      <div className="flex flex-col gap-8">
                          <div className="mb-4">
                             <h1 className="text-6xl font-black text-white tracking-tighter italic drop-shadow-2xl">
-                                CALL OF <span className="text-red-600">2D</span> ZOMBIES
+                                CALL OF <span className="text-red-600">DRUGS</span> 2D
                             </h1>
-                            <div className="text-gray-500 font-mono tracking-[0.5em] text-sm ml-1 mt-2">TACTICAL SURVIVAL</div>
+                            <div className="text-gray-500 font-mono tracking-[0.5em] text-sm ml-1 mt-2">YOUR DRUG EMPIRE</div>
                          </div>
                          
                          <MainMenuButtons 

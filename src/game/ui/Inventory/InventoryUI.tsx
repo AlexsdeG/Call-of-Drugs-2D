@@ -16,7 +16,7 @@ export const InventoryUI = () => {
     const weightPercent = Math.min(100, (currentWeight / maxWeight) * 100);
 
     return (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-200">
+        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in zoom-in duration-200 pointer-events-auto">
             <div className="bg-gray-900 border border-gray-700 w-[600px] h-[400px] rounded-lg shadow-2xl flex flex-col overflow-hidden">
                 
                 {/* Header */}

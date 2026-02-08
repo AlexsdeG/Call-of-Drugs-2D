@@ -207,7 +207,7 @@ src/
 * **Action:**
 * Create `HeatManager.ts`.
 * Logic: Heat decays over time. Crimes (Selling/Killing) increase Heat.
-* UI: Update HUD to show 1-5 Stars.
+* UI: Update HUD to show 1-5 Stars but only when chase is active.
 
 
 * **Test:** Sell drugs repeatedly. Watch stars go up. Verify Police spawn rate increases (mock logic).
@@ -258,6 +258,7 @@ src/
 * **Action:**
 * Create `ShopModal.tsx`: Buy Seeds, Chemicals, Furniture, Guns.
 * Connect to `NPC.ts` (Shopkeeper).
+* Integrate this into the Editor to allow select dealer in entities and select what type of vendor it is.
 
 
 * **Test:** Buy generic items. Verify money deduction.

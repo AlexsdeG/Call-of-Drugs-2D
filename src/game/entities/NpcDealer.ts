@@ -26,6 +26,7 @@ export class NpcDealer extends Phaser.Physics.Arcade.Sprite implements IInteract
         this.setBodySize(32, 32);
         this.setOrigin(0.5, 0.5);
         this.setImmovable(true);
+        this.setPushable(false); // Fix: Prevent player from pushing dealer
         this.setDepth(6);
         this.setTint(0x9900ff); // Purple Dealer
         

@@ -138,8 +138,8 @@ export const DEBUG_MAP: MapData = {
         {
             "id": "100",
             "type": "vehicle",
-            "x": 400,
-            "y": 400,
+            "x": 19*32,
+            "y": 25*32,
             "width": 64,
             "height": 32,
             "properties": {
@@ -150,8 +150,8 @@ export const DEBUG_MAP: MapData = {
         {
             "id": "101",
             "type": "dealer",
-            "x": 600,
-            "y": 400,
+            "x": 20*32,
+            "y": 26*32,
             "width": 32,
             "height": 32,
             "properties": {

@@ -32,6 +32,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   public vehicle: Vehicle | null = null;
   public isDriving: boolean = false;
   private exitKey!: Phaser.Input.Keyboard.Key;
+  
+
 
   // Optimization
   private moveVector: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
@@ -115,7 +117,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
     body.useDamping = false;
 
     this.setCircle(PLAYER.BASE_RADIUS, PLAYER.BASE_RADIUS, PLAYER.BASE_RADIUS);
-
+    
+    this.setCircle(PLAYER.BASE_RADIUS, PLAYER.BASE_RADIUS, PLAYER.BASE_RADIUS);
+    
     this.setCollideWorldBounds(true);
     this.setOrigin(0.5, 0.5);
     this.setImmovable(false);
@@ -245,12 +249,30 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
         this.y = this.vehicle.y;
         
         // Check for Exit
-        if (Phaser.Input.Keyboard.JustDown(this.exitKey)) {
+        // Check for Exit
+        if (Phaser.Input.Keyboard.JustDown(this.exitKey) && this.vehicle.canExit()) {
             this.exitVehicle();
+            return; // Fix: Stop execution to prevent access to null vehicle
         }
-        return; // Skip normal player update
-    }
+        
+        // Allow aiming/rotation while driving (Vision Cone support)
+        this.handleRotation();
+        
+        // Handle shooting while driving if needed (optional, effectively drive-by)
+        // this.weaponSystem.update(time, delta); // Already called below, but we return early.
+        // We need to call subsystem updates if we return early? 
+        // Actually, let's NOT return early for the whole update, just skip movement?
+        // Current design skips normal update. Let's manually call what we need.
+        
+        // Update Weapon System (for shooting from car)
+        if (!useEmpireStore.getState().isInventoryOpen) {
+             this.handleActions(time, delta); // Allow shooting
+             this.weaponSystem.update(time, delta);
+        }
 
+        return; // Skip normal walking movement
+    }
+    
     // Check Pause
     if (Phaser.Input.Keyboard.JustDown(this.keys.pause)) {
         EventBus.emit('toggle-pause');
@@ -291,6 +313,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   private handleActions(time: number, delta: number) {
+      if (useEmpireStore.getState().isInventoryOpen) return;
+
       // Reload
       if (Phaser.Input.Keyboard.JustDown(this.keys.reload)) {
           this.weaponSystem.reload(time);
@@ -577,8 +601,9 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       
       vehicle.setDriver(this);
       
-      // Update Camera
-      this.scene.cameras.main.startFollow(vehicle, true, 0.1, 0.1);
+      
+      // Update Camera -> Managed by CityScene following cameraTarget
+      // this.scene.cameras.main.startFollow(vehicle, true, 0.1, 0.1);
       
       // Notify UI?
       EventBus.emit('player-entered-vehicle');
@@ -599,8 +624,8 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       this.setVisible(true);
       this.body!.enable = true;
       
-      // Reset Camera
-      this.scene.cameras.main.startFollow(this, true, 0.1, 0.1);
+      // Reset Camera -> Managed by CityScene following cameraTarget
+      // this.scene.cameras.main.startFollow(this, true, 0.1, 0.1);
       
       EventBus.emit('player-exited-vehicle');
   }

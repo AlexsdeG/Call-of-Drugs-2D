@@ -15,6 +15,7 @@ export class ProductionUnit extends Phaser.Physics.Arcade.Sprite implements IInt
     
     private startInteractionDuration: number = 1000; // Hold F for 1s to start
     private interactionAccumulator: number = 0;
+    private lastInteractionTime: number = 0; // Track when last interacted to prevent immediate decay
     
     private outputItem: Item = {
         id: 'weed_packet',
@@ -53,7 +54,7 @@ export class ProductionUnit extends Phaser.Physics.Arcade.Sprite implements IInt
         this.updateVisuals();
     }
 
-    update(_time: number, delta: number) {
+    update(time: number, delta: number) {
         if (this.machineState === 'PROCESSING') {
             this.processingTimer += delta;
             this.updateProgressBar(this.processingTimer, this.processingTime);
@@ -62,16 +63,20 @@ export class ProductionUnit extends Phaser.Physics.Arcade.Sprite implements IInt
                 this.completeProcessing();
             }
         } else {
-            // Reset accumulator if not interacting
-             if (this.interactionAccumulator > 0) {
+            // Decay only if not interacted recently (e.g., within last 100ms)
+             if (this.interactionAccumulator > 0 && time > this.lastInteractionTime + 100) {
                  this.interactionAccumulator -= delta * 2; // Decay
                  if (this.interactionAccumulator < 0) this.interactionAccumulator = 0;
                  // this.updateProgressBar(this.interactionAccumulator, this.startInteractionDuration); // Optional feedback
+                 // Force clear if decayed fully
+                 if (this.interactionAccumulator === 0) this.progressBar.clear();
              }
         }
     }
 
     public interact(_player: Player, delta: number = 16): void {
+        this.lastInteractionTime = this.scene.time.now; // Record interaction
+        
         if (this.machineState === 'IDLE') {
             // Hold to Start
             this.interactionAccumulator += delta;

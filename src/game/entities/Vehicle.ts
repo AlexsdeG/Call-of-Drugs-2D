@@ -5,16 +5,22 @@ import { CONTROLS } from '../../config/controls';
 
 export class Vehicle extends Phaser.Physics.Arcade.Sprite implements IInteractable {
     private speed: number = 0;
-    private maxSpeed: number = 600;
-    private acceleration: number = 400;
-    private braking: number = 300;
-    private driftFactor: number = 0.95; // 0 = Ice, 1 = On Rails
-    private rotationSpeed: number = 2.5; // Radians per second
+    private maxSpeed: number = 450; // Reduced from 600
+    private acceleration: number = 300;
+    // private braking: number = 200;
+    private driftFactor: number = 0.92; // More drift
+    private rotationSpeed: number = 2.0; // Slower turn
+    
+    // Interaction
+    private interactionCooldown: number = 0;
     
     private isDriven: boolean = false;
-    private driver: Player | null = null;
+    // private driver: Player | null = null;
     
     private keys: Record<string, Phaser.Input.Keyboard.Key> | null = null;
+    
+    // Visuals
+    private bodyGraphics: Phaser.GameObjects.Graphics;
 
     constructor(scene: Phaser.Scene, x: number, y: number, texture: string = 'car_red') {
         super(scene, x, y, texture);
@@ -26,14 +32,25 @@ export class Vehicle extends Phaser.Physics.Arcade.Sprite implements IInteractab
         this.setDrag(0.5); // Air resistance
         this.setDepth(25); // Below player (30) but above items (10)
         
-        // Setup body
-        // Assuming cars are rectangular
-        this.setBodySize(this.width * 0.8, this.height * 0.8);
+        // Physics Tuning
+        // Physics Tuning
+        this.setMass(1000); // Heavy
+        this.setPushable(false); // Player can't push it
+        
+        // Body setup (Initial) - Will be updated in update() for rotation wrapping
+        this.setBodySize(64, 32);
+        
+        // Visual Fallback (Colored Box)
+        this.bodyGraphics = scene.add.graphics();
+        this.bodyGraphics.fillStyle(0xff0000, 1); // Red
+        this.bodyGraphics.fillRect(-32, -16, 64, 32);
+        this.bodyGraphics.setDepth(25);
+        // this.bodyGraphics.setVisible(false); // Hide if using real texture, but keep for now as requested
     }
     
     public setDriver(player: Player) {
         this.isDriven = true;
-        this.driver = player;
+        // this.driver = player;
         this.keys = this.scene.input.keyboard!.addKeys({
             up: CONTROLS.MOVE_UP,
             down: CONTROLS.MOVE_DOWN,
@@ -43,22 +60,52 @@ export class Vehicle extends Phaser.Physics.Arcade.Sprite implements IInteractab
             exit: CONTROLS.INTERACT
         }) as Record<string, Phaser.Input.Keyboard.Key>;
         
-        // Reset speed to avoid instant jump if carrying over velocity weirdly, 
-        // though Arcade physics handles existing velocity fine.
+        // Cooldown to prevent instant exit
+        this.interactionCooldown = 1000;
     }
     
     public removeDriver() {
         this.isDriven = false;
-        this.driver = null;
+        // this.driver = null;
         if (this.keys) {
             // We might not want to remove keys from the SCENE, just clear our ref
             this.keys = null;
         }
         // Apply Parking Brake (Damping)
         this.setDrag(800);
+        
+        // Cooldown to prevent instant re-entry
+        this.interactionCooldown = 1000;
     }
 
-    update(time: number, delta: number) {
+    update(_time: number, delta: number) {
+        if (this.interactionCooldown > 0) {
+            this.interactionCooldown -= delta;
+        }
+        
+        // Sync Visuals
+        this.bodyGraphics.setPosition(this.x, this.y);
+        this.bodyGraphics.setRotation(this.rotation);
+
+        // Update Physics Body AABB to "wrap" the tilted rectangle
+        // Phaser Arcade Physics doesn't support rotated rects, so we grow the AABB
+        const w = 64; // Visual Width
+        const h = 32; // Visual Height
+        const cos = Math.abs(Math.cos(this.rotation));
+        const sin = Math.abs(Math.sin(this.rotation));
+        
+        const newWidth = w * cos + h * sin;
+        const newHeight = w * sin + h * cos;
+        
+        this.setBodySize(newWidth, newHeight);
+        
+        // Center the body on the sprite (Origin 0.5, 0.5)
+        // Arcade offset is from the top-left of the sprite's texture frame
+        this.setOffset(
+            (this.width / 2) - (newWidth / 2),
+            (this.height / 2) - (newHeight / 2)
+        );
+
         if (this.isDriven && this.keys) {
             this.handleDriving(delta);
         } else {
@@ -93,9 +140,6 @@ export class Vehicle extends Phaser.Physics.Arcade.Sprite implements IInteractab
         
         // Steering (Only when moving)
         if (Math.abs(this.speed) > 10) {
-            const turnDir = this.speed > 0 ? 1 : -1; // Reverse steering inverted? No, usually typical car steering feels better normal.
-            // Actually in reverse, Left key still turns front wheels left, causing car to turn left (relative to driver facing back? No)
-            
             if (this.keys.left.isDown) {
                 this.rotation -= this.rotationSpeed * dt;
             } else if (this.keys.right.isDown) {
@@ -114,19 +158,28 @@ export class Vehicle extends Phaser.Physics.Arcade.Sprite implements IInteractab
         this.setVelocityX(this.body!.velocity.x - lateralVelocity.x * this.driftFactor);
         this.setVelocityY(this.body!.velocity.y - lateralVelocity.y * this.driftFactor);
     }
+    
+    public destroy(fromScene?: boolean) {
+        if (this.bodyGraphics) this.bodyGraphics.destroy();
+        super.destroy(fromScene);
+    }
 
     // --- Interaction ---
     
-    public canInteract(player: Player): boolean {
-        return !this.isDriven;
+    public canInteract(_player: Player): boolean {
+        return !this.isDriven && this.interactionCooldown <= 0;
     }
 
-    public getInteractionPrompt(player: Player): string {
+    public canExit(): boolean {
+        return this.interactionCooldown <= 0;
+    }
+
+    public getInteractionPrompt(_player: Player): string {
         return "Press F to Drive";
     }
 
-    public interact(player: Player, delta: number): void {
-        if (this.isDriven) return;
+    public interact(player: Player, _delta: number): void {
+        if (this.isDriven || this.interactionCooldown > 0) return;
         player.enterVehicle(this);
     }
 }
