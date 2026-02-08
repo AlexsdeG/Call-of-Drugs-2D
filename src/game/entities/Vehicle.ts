@@ -38,7 +38,8 @@ export class Vehicle extends Phaser.Physics.Arcade.Sprite implements IInteractab
         this.setPushable(false); // Player can't push it
         
         // Body setup (Initial) - Will be updated in update() for rotation wrapping
-        this.setBodySize(64, 32);
+        // FIX: Use Circle for rotation stability
+        this.setCircle(32);
         
         // Visual Fallback (Colored Box)
         this.bodyGraphics = scene.add.graphics();
@@ -89,22 +90,8 @@ export class Vehicle extends Phaser.Physics.Arcade.Sprite implements IInteractab
 
         // Update Physics Body AABB to "wrap" the tilted rectangle
         // Phaser Arcade Physics doesn't support rotated rects, so we grow the AABB
-        const w = 64; // Visual Width
-        const h = 32; // Visual Height
-        const cos = Math.abs(Math.cos(this.rotation));
-        const sin = Math.abs(Math.sin(this.rotation));
-        
-        const newWidth = w * cos + h * sin;
-        const newHeight = w * sin + h * cos;
-        
-        this.setBodySize(newWidth, newHeight);
-        
-        // Center the body on the sprite (Origin 0.5, 0.5)
-        // Arcade offset is from the top-left of the sprite's texture frame
-        this.setOffset(
-            (this.width / 2) - (newWidth / 2),
-            (this.height / 2) - (newHeight / 2)
-        );
+        // FIX: Removed dynamic resizing. Circle handles rotation naturally.
+
 
         if (this.isDriven && this.keys) {
             this.handleDriving(delta);

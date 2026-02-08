@@ -509,6 +509,12 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
   
   private updateInteractionPrompt() {
+      // FIX: Hide prompts when driving
+      if (this.isDriving) {
+          EventBus.emit('hide-interaction-prompt');
+          return;
+      }
+
       if (!this.interactables) return;
       
       let closest: IInteractable | null = null;
